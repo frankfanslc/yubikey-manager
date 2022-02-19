@@ -161,7 +161,7 @@ class _UsbCompositeDevice(YkmanDevice):
             logger.debug("Checking candidate: %s", candidate)
             try:
                 conn = candidate.open_connection(connection_type)
-                info = read_info(self.pid, conn)
+                info = read_info(conn, self.pid)
                 ref_key = info.serial or candidate.fingerprint
                 self._refs[0][iface][ref_key] = candidate
                 if self.info.serial == info.serial:
@@ -196,7 +196,7 @@ def list_all_devices() -> List[Tuple[YkmanDevice, DeviceInfo]]:
             if dev.pid not in handled_pids and pids.get(dev.pid, True):
                 try:
                     with dev.open_connection(connection_type) as conn:
-                        info = read_info(dev.pid, conn)
+                        info = read_info(conn, dev.pid)
                     pids[dev.pid] = True
                     ref_key = info.serial or dev.fingerprint
                     refs[0][iface][ref_key] = dev
@@ -248,7 +248,7 @@ def connect_to_device(
                 retry_ccid.append(dev)
                 logger.debug("CCID No card present, will retry")
                 continue
-            info = read_info(dev.pid, conn)
+            info = read_info(conn, dev.pid)
             if serial and info.serial != serial:
                 conn.close()
             else:
@@ -268,7 +268,7 @@ def connect_to_device(
             except NoCardException:
                 continue
             retry_ccid.remove(dev)
-            info = read_info(dev.pid, conn)
+            info = read_info(conn, dev.pid)
             if serial and info.serial != serial:
                 conn.close()
             else:
